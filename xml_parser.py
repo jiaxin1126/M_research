@@ -15,8 +15,10 @@ class Measure:
         m = self.measure
         for n in m.find_all('note'):
             note = Note()
-            if not n.find('durarion'): # grace
-                pass
+            if n.find('grace'): # grace
+                break
+            if n.find('cue'):
+                break
             if n.find('rest'):
                 note.step = '-'
                 note.octave = 0
@@ -28,6 +30,8 @@ class Measure:
                     note.alter = 0
                 else:
                     note.alter = int(n.pitch.alter.string)
+            # for checking
+            # print note.step
             note.duration = int(n.duration.string)
             note.voice = int(n.voice.string)
             note.measure = self.number
@@ -78,6 +82,7 @@ class Sheet:
         measures = []
         for m in s.find_all('measure'):
             number = m['number']
+            # print number
             measure = Measure(m, number)
             measures.append(measure.get_measure_notes())
         self.measures = measures
@@ -113,7 +118,18 @@ def split_into_unit_time(melody_line, unit_time):
     return melody
 
 if __name__ == '__main__':
-    crab = Sheet('/Users/jiaxin/Documents/M_research/test_file/Crab_Canon.xml')
-    m = crab.get_sheet_measures()
+    # crab = Sheet('/Users/jiaxin/Documents/M_research/test_file/Crab_Canon.xml')
+    mazeppa = Sheet('/Users/jiaxin/Documents/M_research/test_file/mazeppa.xml')
+    m = mazeppa.get_sheet_measures()
     max_time, min_time, treble_line = treble_line(m)
-    unit_line = split_into_unit_time(treble_line, min_time)
+    # for checking
+    f = open('/Users/jiaxin/Documents/M_research/test_file/m.txt', 'w')
+    for i in treble_line:
+        f.write(str(i))
+        f.write('\n')
+    f.close()
+
+    # unit_line = split_into_unit_time(treble_line, min_time)
+    # print max_time, min_time
+    # for i in unit_line:
+    #     print i
