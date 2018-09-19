@@ -86,13 +86,34 @@ class Sheet:
         self.parse()
         return self.measures
 
-# def treble_line(sheet):
-#     '''
-#     Sheet should be a list of measures' list, and measures should be a list of notes' dictionary.
-#     '''
-#     max_time, min_time = 0, 0
-#     for measures in sheet
+def treble_line(sheet):
+    '''
+    Sheet should be a list of measures' list, and measures should be a list of notes' dictionary.
+    '''
+    max_time, min_time = -1 * float('Inf'), float('Inf')
+    treble_line = []
+    for measures in sheet:
+        treble = []
+        for notes in measures:
+            if notes['voice'] == 1:
+                treble.append((notes['step'], notes['alter'], notes['octave'], notes['duration']))
+                min_time = min(min_time, notes['duration'])
+                max_time = max(max_time, notes['duration'])
+        treble_line.append(treble)
+    return max_time, min_time, treble_line
+
+def split_into_unit_time(melody_line, unit_time):
+    melody = []
+    for measures in melody_line:
+        line = [] # if some stupid questions come?
+        for notes in measures:
+            how_many = int(notes[3] / unit_time)
+            line += [(notes[0], notes[1], notes[2])] * how_many
+        melody.append(line)
+    return melody
 
 if __name__ == '__main__':
     crab = Sheet('/Users/jiaxin/Documents/M_research/test_file/Crab_Canon.xml')
     m = crab.get_sheet_measures()
+    max_time, min_time, treble_line = treble_line(m)
+    unit_line = split_into_unit_time(treble_line, min_time)
