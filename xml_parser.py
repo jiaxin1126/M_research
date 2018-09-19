@@ -2,35 +2,97 @@ from note import *
 from bs4 import BeautifulSoup
 
 class Measure:
-    def __init__(self, number=None):
+    def __init__(self, measure, number=None):
+        self.measure = measure
         self.number = number
+        self.note_array = []
 
     def parse_measure(self):
-        for n in self.find_all('note'):
+        '''
+        Every note's info in each measure.
+        '''
+        note_array = []
+        m = self.measure
+        for n in m.find_all('note'):
             note = Note()
-            note.step = n.pitch.step.string
-            note.octave = int(n.pitch.octave.string)
-            note.duration = int(n.duration.string)
-            note.voice = int(n.voice.string)
-            note.measure = self.number.string
-
-            if not n.pitch.alter:
+            if not n.find('durarion'): # grace
+                pass
+            if n.find('rest'):
+                note.step = '-'
+                note.octave = 0
                 note.alter = 0
             else:
-                note.alter = int(n.pitch.alter.string)
+                note.step = n.pitch.step.string
+                note.octave = int(n.pitch.octave.string)
+                if not n.pitch.alter:
+                    note.alter = 0
+                else:
+                    note.alter = int(n.pitch.alter.string)
+            note.duration = int(n.duration.string)
+            note.voice = int(n.voice.string)
+            note.measure = self.number
 
-    def pitch_height(self):
-        '''Calculate pitch's height.'''
-        pass
+            note_array.append(note.note_print())
+        self.note_array = note_array
+
+    def get_measure_notes(self):
+        self.parse_measure()
+        return self.note_array
+
+    def pitch_height(self, step, alter, octave):
+        '''
+        Calculate pitch's height.
+        May be not necessary.
+        '''
+            # A0 is 1
+        height = 0
+        if octave == 0:
+            if step == 'A':
+                height = 0 if alter == 0 else 1
+            if step == 'B':
+                if alter == 0:
+                    height = 3
+                else:
+                    height = 2 if alter == -1 else 4
+
+        d_note = {
+            'C': 4,
+            'D': 6,
+            'E': 8,
+            'F': 9,
+            'G': 11,
+            'A': 13,
+            'B': 15
+        }
+        height = d_note[step] + (octave-1) * 12 + alter
+        return height
 
 class Sheet:
     def __init__(self, xml=None):
         self.xml = xml
         self.soup = BeautifulSoup(open(self.xml), 'html.parser')
+        self.measures = []
 
     def parse(self):
-        pass
+        s = self.soup
+        measures = []
+        for m in s.find_all('measure'):
+            number = m['number']
+            measure = Measure(m, number)
+            measures.append(measure.get_measure_notes())
+        self.measures = measures
+
+    def get_sheet_measures(self):
+        self.parse()
+        return self.measures
+
+# def treble_line(sheet):
+#     '''
+#     Sheet should be a list of measures' list, and measures should be a list of notes' dictionary.
+#     '''
+#     max_time, min_time = 0, 0
+#     for measures in sheet
 
 if __name__ == '__main__':
     crab = Sheet('/Users/jiaxin/Documents/M_research/test_file/Crab_Canon.xml')
-    print crab.soup
+    m = crab.get_sheet_measures()
