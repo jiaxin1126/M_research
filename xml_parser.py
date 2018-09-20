@@ -23,7 +23,7 @@ class Measure:
                 note.step = '-'
                 note.octave = 0
                 note.alter = 0
-            else:
+            else: # normal notes
                 note.step = n.pitch.step.string
                 note.octave = int(n.pitch.octave.string)
                 if not n.pitch.alter:
@@ -36,7 +36,16 @@ class Measure:
             note.voice = int(n.voice.string)
             note.measure = self.number
 
-            note_array.append(note.note_print())
+            note_array.append(note.note_print()) # became dictionary
+
+            # special process: if member of chord
+            if n.find('chord'):
+                previous, candidate = note_array[-2], note_array[-1]
+                previous_height, candidate_height = self.pitch_height(previous['step'], previous['alter'], previous['octave']), \
+                                                    self.pitch_height(candidate['step'], candidate['alter'], candidate['octave'])
+                if candidate_height > previous_height:
+                    del note_array[-2]
+
         self.note_array = note_array
 
     def get_measure_notes(self):
@@ -119,17 +128,27 @@ def split_into_unit_time(melody_line, unit_time):
 
 if __name__ == '__main__':
     # crab = Sheet('/Users/jiaxin/Documents/M_research/test_file/Crab_Canon.xml')
-    mazeppa = Sheet('/Users/jiaxin/Documents/M_research/test_file/mazeppa.xml')
-    m = mazeppa.get_sheet_measures()
+    # mazeppa = Sheet('/Users/jiaxin/Documents/M_research/test_file/mazeppa.xml')
+    black = Sheet('/Users/jiaxin/Desktop/exp/black_key.xml')
+    m = black.get_sheet_measures()
     max_time, min_time, treble_line = treble_line(m)
     # for checking
-    f = open('/Users/jiaxin/Documents/M_research/test_file/m.txt', 'w')
+    count = 0
     for i in treble_line:
-        f.write(str(i))
-        f.write('\n')
-    f.close()
+        count += 1
+        print count
+        print i
+
+    # for checking
+    # f = open('/Users/jiaxin/Documents/M_research/test_file/m.txt', 'w')
+    # for i in treble_line:
+    #     f.write(str(i))
+    #     f.write('\n')
+    # f.close()
 
     # unit_line = split_into_unit_time(treble_line, min_time)
     # print max_time, min_time
     # for i in unit_line:
+    #     count += 1
+    #     print count
     #     print i
