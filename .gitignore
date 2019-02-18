@@ -3,3 +3,7 @@
 /test_file/*
 /file_result/*
 midi_file/*
+/webapp/*
+/webapp_test/*
+*.py
+*.ipynb
